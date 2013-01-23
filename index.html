@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+<title>Bootstrap icon finder</title>
+<link href="css/bootstrap.css" rel="stylesheet" type="text/css">
+<link href="css/styles.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+<div class="container">
+	<div class="page-header">
+		<h1>Bootstrap icon finder</h1>
+	</div>
+
+	<form class="form-search">
+		<input id="search" type="search" class="input-block-level search-query">
+	</form>
+
+	<ul id="icons" class='ul-icon-list'></ul>
+</div>
+<script src="js/icon-sets.js"></script>
+<script src="js/filter.js"></script>
+<script type="text/javascript">
+(function(w, d) {
+	var searchEl = d.getElementById('search');
+	var iconEl = d.getElementById('icons');
+
+	var iconSet = ICONS['bootstrap'];
+	var i, span, iconLabel;
+
+	var selectThis = function() {
+		if (document.selection) {
+			var range = document.body.createTextRange();
+			range.moveToElementText(this);
+			range.select();
+		} else if (window.getSelection) {
+			var range = document.createRange();
+			range.selectNode(this);
+			window.getSelection().addRange(range);
+		}
+	};
+
+	// construct icons
+	console.log(iconSet, iconSet.icons);
+	for (iconName in iconSet.icons) {
+		iconLabel = document.createElement('li');
+
+		i = document.createElement('i');
+		i.className = iconName;
+
+		span = document.createElement('span');
+		span.appendChild(document.createTextNode(iconName));
+		span.addEventListener('click', selectThis);
+
+		iconLabel.appendChild(i);
+		iconLabel.appendChild(span);
+		iconLabel.dataset['iconName'] = iconName;
+
+		iconEl.appendChild(iconLabel);
+	}
+
+	// add event listeners
+	var change = function() {
+		var value = searchEl.value;
+		console.log("Searching for", value);
+		var searchResults = search(iconSet.icons, value);
+		console.log(searchResults);
+
+		for (var i = 0, l = iconEl.childNodes.length, child, iconName; i < l; i++) {
+			child = iconEl.childNodes[i];
+			iconName = child.dataset['iconName'];
+			if (searchResults[iconName]) {
+				child.classList.remove('hidden');
+			} else {
+				child.classList.add('hidden');
+			}
+		}
+	};
+	searchEl.addEventListener('change', change);
+	searchEl.addEventListener('keyup', change);
+	searchEl.addEventListener('blur', change);
+	searchEl.addEventListener('focus', change);
+
+	// do search
+	change();
+
+})(window, document);
+</script>
+</body>
+</html>

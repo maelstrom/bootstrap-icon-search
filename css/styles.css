@@ -1,0 +1,21 @@
+.ul-icon-list {
+	margin-left: 0px;
+
+	column-count: 3;
+	column-gap: 20px;
+	-moz-column-count: 3;
+	-moz-column-gap: 20px;
+	-webkit-column-count: 3;
+	-webkit-column-gap: 20px;
+}
+.ul-icon-list li {
+	list-style-type: none;
+	margin-bottom: 3px;
+}
+.ul-icon-list li span {
+	padding-left: 5px;
+	cursor: pointer;
+}
+.hidden  {
+	display: none;
+}
