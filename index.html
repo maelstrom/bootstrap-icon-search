@@ -55,6 +55,19 @@
 		iconLabel.appendChild(i);
 		iconLabel.appendChild(span);
 		iconLabel.dataset['iconName'] = iconName;
+		
+		// Add base64 encoding to click event
+		iconLabel.addEventListener('click', function() {
+			var icon = this.getElementsByTagName('i')[0];
+			var bp = w.getComputedStyle(icon).getPropertyValue('background-position');
+			
+			bp = bp.split(" ");
+
+			var x = parseFloat(bp[0]);
+			var y = parseFloat(bp[1]);
+			
+			window.location = encodeIcon(x, y);
+		});
 
 		iconEl.appendChild(iconLabel);
 	}
@@ -83,6 +96,24 @@
 
 	// do search
 	change();
+	
+	
+	// Base 64 icon encoding
+	var c = d.createElement('canvas'),
+		cx = c.getContext('2d'),
+		b = d.getElementsByTagName('body')[0],
+		img = new Image(),
+		p = d.getElementById('code');
+
+	c.width = 14;
+	c.height = 14;
+
+	img.src = 'img/glyphicons-halflings.png';
+
+	function encodeIcon(x, y) {
+		cx.drawImage(img, x, y);
+		return c.toDataURL();
+	}
 
 })(window, document);
 </script>
