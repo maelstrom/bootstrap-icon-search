@@ -86,5 +86,31 @@
 
 })(window, document);
 </script>
+<script type="text/javascript">
+/* This needs to be in the <head>, otherwise it gets printed out! */
+
+(function(){
+	var domain = 'maelstrom.github.com';
+
+	function woopraReady(tracker){
+		tracker.setDomain(domain);
+		tracker.setIdleTimeout(300000);
+		tracker.addVisitorProperty('project','bootstrap-icon-search');
+		tracker.track();
+		return false;
+	}
+
+	if (location.host == domain) {
+		window.woopraReady = woopraReady;
+
+		var wsc=document.createElement('script');
+		wsc.type='text/javascript';
+		wsc.src=document.location.protocol+'//static.woopra.com/js/woopra.js';
+		wsc.async=true;
+		var ssc = document.getElementsByTagName('script')[0];
+		ssc.parentNode.insertBefore(wsc, ssc);
+	};
+})();
+</script>
 </body>
 </html>
