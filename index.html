@@ -22,11 +22,46 @@
 <script src="js/filter.js"></script>
 <script type="text/javascript">
 (function(w, d) {
+	"use strict";
 	var searchEl = d.getElementById('search');
 	var iconEl = d.getElementById('icons');
 
 	var iconSet = ICONS['bootstrap'];
-	var i, span, iconLabel;
+
+	var $ = function(type, options) {
+		var el = document.createElement(type);
+		var x;
+		if ('class' in options) {
+			el.className = options['class'];
+			delete options['class'];
+		}
+		if ('text' in options) {
+			el.appendChild(document.createTextNode(options.text));
+			delete options.text;
+		}
+		if ('children' in options) {
+			options.children.forEach(function (child) {
+				el.appendChild(child);
+			})
+			delete options.children;
+		}
+		if ('events' in options) {
+			for (x in options.events) {
+				el.addEventListener(x, options.events[x]);
+			}
+			delete options.events;
+		}
+		if ('data' in options) {
+			for (x in options.data) {
+				el.dataset[x] = options.data[x]
+			}
+			delete options.data;
+		}
+		for (x in options) {
+			el.setAttribute(x, options[x]);
+		}
+		return el;
+	};
 
 	var selectThis = function() {
 		if (document.selection) {
@@ -40,31 +75,151 @@
 		}
 	};
 
-	// construct icons
-	console.log(iconSet, iconSet.icons);
-	for (iconName in iconSet.icons) {
-		iconLabel = document.createElement('li');
+	var copyIcon = function(e) {
+		var button = e.target;
+		var icon = button.parentNode.childNodes[0];
+		var iconClass = icon.className;
+		var iconStyle = getStyle('.' + iconClass)
+		var x = parseInt(iconStyle.style.backgroundPositionX, 10);
+		var y = parseInt(iconStyle.style.backgroundPositionY, 10);
 
-		i = document.createElement('i');
-		i.className = iconName;
+		var img = new Image();
+		img.src = 'img/glyphicons-halflings.png';
+		var canvas = document.createElement('canvas')
+		canvas.width = 14;
+		canvas.height = 14;
+		var context = canvas.getContext('2d');
+		context.drawImage(img, x, y);
+		var iconCssLines = [
+			'.' + iconClass + ' { ',
+			'	background-image: url("' + canvas.toDataURL() + '");',
+			'	display: inline-block;',
+			'	height: 14px;',
+			'	width: 14px;',
+			'	margin-top: 1px;',
+			'	line-height: 14px;',
+			'	vertical-align: text-top;',
+			'}'
+		];
 
-		span = document.createElement('span');
-		span.appendChild(document.createTextNode(iconName));
-		span.addEventListener('click', selectThis);
+		var iconCss = iconCssLines.join('\n')
 
-		iconLabel.appendChild(i);
-		iconLabel.appendChild(span);
-		iconLabel.dataset['iconName'] = iconName;
+		var modal = makeModal({
+			'header': [$('h3', {'text': 'Copy icon CSS'})],
+			'body': [$('textarea', {
+				'text': iconCss,
+				'class': 'input-block-level',
+				'style': 'white-space: pre; overflow: scroll',
+				'wrap': 'off',
+				'rows': iconCssLines.length
+			})],
+			'footer': [$('button', {
+				'class': 'btn btn-primary',
+				'text': 'Close',
+				'events': {'click': function() { modal.kill(); }}
+			})],
+			killFromBackdrop: true
+		}).show();
+	};
 
-		iconEl.appendChild(iconLabel);
+	var makeModal = function(options) {
+
+		var root = $('div', {'class': 'modal fade'});
+		var backdrop = $('div', {'class': 'modal-backdrop fade'});
+
+		'header body footer'.split(' ').forEach(function(section) {
+			if (section in options) {
+				root.appendChild($('div', {
+					'class': 'modal-' + section,
+					'children': options[section],
+				}));
+			}
+		});
+
+		var hide = function() {
+			setTimeout(function() {
+				backdrop.classList.remove('in');
+				root.classList.remove('in');
+				modal.state = 'hidden';
+			}, 0);
+			return modal;
+		};
+		var show = function() {
+			setTimeout(function() {
+				backdrop.classList.add('in');
+				root.classList.add('in');
+				modal.state = 'visible';
+			}, 0);
+			return modal;
+		};
+		var kill = function() {
+			hide();
+			setTimeout(function() {
+				if (root.parentNode) {
+					backdrop.parentNode.removeChild(backdrop);
+					root.parentNode.removeChild(root);
+					modal.state = 'dead';
+				}
+			}, 1000);
+			return modal;
+		};
+
+		if (options.killFromBackdrop) {
+			backdrop.addEventListener('click', kill);
+		}
+
+		var modal = {
+			modal: root,
+			backdrop: backdrop,
+			hide: hide,
+			show: show,
+			state: 'hidden',
+			kill: kill
+		};
+		document.body.appendChild(backdrop);
+		document.body.appendChild(root);
+		console.log(modal);
+		return modal;
+	};
+
+	function getStyle(className) {
+		var classes = document.styleSheets[0].rules || document.styleSheets[0].cssRules
+		for (var x=0;x<classes.length;x++) {
+			if (classes[x].selectorText==className) {
+				return classes[x];
+			}
+		}
 	}
+
+	function makeIconList(iconSet) {
+		var i, span, iconLabel, copyButton, iconName;
+
+		// construct icons
+		for (iconName in iconSet.icons) {
+			iconEl.appendChild($('li', {
+				'data': { 'iconName': iconName },
+				'children': [
+					$('i', {'class': iconName}),
+					$('span', {
+						'text': iconName,
+						'events': {'click': selectThis}
+					}),
+					$('a', {
+						'text': 'copy',
+						'class': 'btn btn-mini pull-right copy',
+						'events': {'click': copyIcon}
+					})
+				]
+			}));
+		}
+	}
+
+	makeIconList(iconSet);
 
 	// add event listeners
 	var change = function() {
 		var value = searchEl.value;
-		console.log("Searching for", value);
 		var searchResults = search(iconSet.icons, value);
-		console.log(searchResults);
 
 		for (var i = 0, l = iconEl.childNodes.length, child, iconName; i < l; i++) {
 			child = iconEl.childNodes[i];

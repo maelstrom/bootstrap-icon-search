@@ -11,11 +11,19 @@
 .ul-icon-list li {
 	list-style-type: none;
 	margin-bottom: 3px;
+	position: relative;
 }
 .ul-icon-list li span {
 	padding-left: 5px;
 	cursor: pointer;
 }
+.ul-icon-list li .copy {
+	opacity: 0;
+	transition: 0.1s;
+	-moz-transition: 0.1s;
+	-webkit-transition: 0.1s;
+}
+.ul-icon-list li:hover .copy { opacity: 1 }
 .hidden  {
 	display: none;
 }
